@@ -335,21 +335,32 @@ const Booking = () => {
         item_details: itemDetails
       });
 
-      // Then request token from Midtrans using the axios instance - DO NOT include auth header for payment creation
-      const response = await api.post('/api/payment/create-transaction', {
-        booking_id: actualBookingId, // Use the actual booking ID returned from backend
-        amount: totalPrice,
-        customer_email: formData.email,
-        customer_name: formData.fullName,
-        item_details: itemDetails
-      }, {
+      // Then request token from Midtrans using direct fetch to avoid sending auth header
+      const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+      const response = await fetch(`${API_BASE_URL}/api/payment/create-transaction`, {
+        method: 'POST',
         headers: {
-          // Don't include Authorization header for payment creation endpoint
-          'Content-Type': 'application/json'
-        }
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          booking_id: actualBookingId, // Use the actual booking ID returned from backend
+          amount: totalPrice,
+          customer_email: formData.email,
+          customer_name: formData.fullName,
+          item_details: itemDetails
+        })
       });
 
-      const data = response.data;
+      // Check response before parsing
+      if (!response.ok) {
+        const errorText = await response.text(); // Get error text for debugging
+        console.error('Payment creation error:', response.status, errorText);
+        throw new Error(`HTTP error! status: ${response.status}. ${errorText || 'Gagal membuat transaksi pembayaran.'}`);
+      }
+
+      const data = await response.json();
+
+      // const data = response.data;
 
       console.log('Midtrans API response:', data);
 
