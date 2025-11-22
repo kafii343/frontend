@@ -5,10 +5,11 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { 
+import {
   MapPin, Clock, Users, Calendar, Star, ArrowRight,
   Mountain, Camera, Tent, DollarSign, UserPlus
 } from "lucide-react";
+import api from "@/lib/api";
 
 const OpenTrip = () => {
   const [trips, setTrips] = useState<any[]>([]);
@@ -17,13 +18,11 @@ const OpenTrip = () => {
   useEffect(() => {
     const fetchTrips = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/open-trips");
-        const result = await response.json();
+        const response = await api.get("/open-trips");
+        console.log("TRIPS API:", response.data.data);
 
-        console.log("TRIPS API:", result.data);
-
-        if (result?.data?.length > 0) {
-          setTrips(result.data);
+        if (response.data?.data?.length > 0) {
+          setTrips(response.data.data);
         } else {
           setTrips([]);
         }
@@ -48,11 +47,22 @@ const OpenTrip = () => {
     }
   };
 
+  // Helper function to get the correct image URL based on the backend response
   const getImageUrl = (imageUrl: string) => {
     if (!imageUrl) return "https://via.placeholder.com/500x300?text=Mountain";
-    if (imageUrl.startsWith('http')) return imageUrl;
-    if (imageUrl.startsWith('/uploads')) return `http://localhost:5000${imageUrl}`;
-    return `http://localhost:5000/uploads${imageUrl}`;
+
+    // Check if it's already an absolute URL or starts with http
+    if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+      return imageUrl;
+    }
+
+    // If it starts with /uploads, prepend the base URL
+    if (imageUrl.startsWith('/uploads')) {
+      return `${api.defaults.baseURL}${imageUrl}`;
+    }
+
+    // Otherwise, prepend /uploads
+    return `${api.defaults.baseURL}/uploads${imageUrl}`;
   };
 
   return (
@@ -116,7 +126,7 @@ const OpenTrip = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
               {trips.map((trip) => (
                 <Card key={trip.id} className="overflow-hidden group hover:shadow-2xl transition-all duration-300 cursor-pointer flex flex-col h-full border-0 bg-white shadow-lg hover:shadow-2xl transform hover:-translate-y-2 ease-in-out">
-                  
+
                   {/* Image Container - Fixed Aspect Ratio */}
                   <div className="aspect-video bg-gray-200 relative overflow-hidden flex-shrink-0">
                     <img
@@ -203,18 +213,18 @@ const OpenTrip = () => {
 
                     {/* CTA Buttons */}
                     <div className="flex gap-3 mt-auto pt-4">
-                      <Button 
-                        asChild 
-                        variant={trip.is_closed || trip.quota_remaining <= 0 ? "outline" : "adventure"} 
-                        size="sm" 
+                      <Button
+                        asChild
+                        variant={trip.is_closed || trip.quota_remaining <= 0 ? "outline" : "adventure"}
+                        size="sm"
                         className={`flex-1 text-sm font-medium rounded-lg transition-all duration-300 ${
-                          trip.is_closed || trip.quota_remaining <= 0 
-                            ? "text-gray-500 border-gray-300" 
+                          trip.is_closed || trip.quota_remaining <= 0
+                            ? "text-gray-500 border-gray-300"
                             : "shadow-md"
                         }`}
                         disabled={trip.is_closed || trip.quota_remaining <= 0}
                       >
-                        <Link 
+                        <Link
                           to={trip.is_closed || trip.quota_remaining <= 0 ? "#" : `/booking?trip=${trip.id}`}
                           onClick={(e) => {
                             if (trip.is_closed || trip.quota_remaining <= 0) {
@@ -223,7 +233,7 @@ const OpenTrip = () => {
                             }
                           }}
                         >
-                          {trip.is_closed || trip.quota_remaining <= 0 ? "Penuh" : "Daftar"} 
+                          {trip.is_closed || trip.quota_remaining <= 0 ? "Penuh" : "Daftar"}
                           <ArrowRight className="ml-2 h-4 w-4" />
                         </Link>
                       </Button>

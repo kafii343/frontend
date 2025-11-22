@@ -6,6 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { User } from "lucide-react";
+import api from "@/lib/api";
+import { useAuthStore } from "@/store";
 
 const Register = () => {
   const { toast } = useToast();
@@ -25,7 +27,7 @@ const Register = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Password confirmation check
     if (formData.password !== formData.confirmPassword) {
       toast({
@@ -49,29 +51,22 @@ const Register = () => {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch("http://localhost:5000/api/auth/register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          username: formData.username,
-          email: formData.email,
-          password: formData.password,
-          phone: formData.phone,
-        }),
+      // Use the store's register function which uses the new API
+      const result = await api.post("/auth/register", {
+        username: formData.username,
+        email: formData.email,
+        password: formData.password,
+        phone: formData.phone,
       });
 
-      const data = await response.json();
-
-      if (data.success) {
+      if (result.data.success) {
         // Store user data and token
-        localStorage.setItem("token", data.data.token);
-        localStorage.setItem("user", JSON.stringify(data.data.user));
-        
+        localStorage.setItem("token", result.data.data.token);
+        localStorage.setItem("user", JSON.stringify(result.data.data.user));
+
         toast({
           title: "Registration Successful",
-          description: `Welcome, ${data.data.user.username}!`,
+          description: `Welcome, ${result.data.data.user.username}!`,
         });
 
         // Redirect to home
@@ -79,15 +74,15 @@ const Register = () => {
       } else {
         toast({
           title: "Registration Failed",
-          description: data.message || "An error occurred during registration",
+          description: result.data.message || "An error occurred during registration",
           variant: "destructive",
         });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Registration error:", error);
       toast({
         title: "Registration Failed",
-        description: "An error occurred during registration. Please try again.",
+        description: error.response?.data?.message || "An error occurred during registration. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -107,7 +102,7 @@ const Register = () => {
             Sign up to get started with our services
           </CardDescription>
         </CardHeader>
-        
+
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
@@ -121,7 +116,7 @@ const Register = () => {
                 required
               />
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
@@ -133,7 +128,7 @@ const Register = () => {
                 required
               />
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="phone">Phone (Optional)</Label>
               <Input
@@ -144,7 +139,7 @@ const Register = () => {
                 onChange={(e) => handleInputChange("phone", e.target.value)}
               />
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
               <Input
@@ -156,7 +151,7 @@ const Register = () => {
                 required
               />
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="confirmPassword">Confirm Password</Label>
               <Input
@@ -168,16 +163,16 @@ const Register = () => {
                 required
               />
             </div>
-            
-            <Button 
-              type="submit" 
-              className="w-full" 
+
+            <Button
+              type="submit"
+              className="w-full"
               disabled={isSubmitting}
             >
               {isSubmitting ? "Creating account..." : "Create Account"}
             </Button>
           </form>
-          
+
           <div className="mt-6 text-center text-sm text-muted-foreground">
             <p className="mb-2">Need admin access? Contact an existing admin to create your account.</p>
             Already have an account?{" "}

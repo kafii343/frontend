@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowRight, CheckCircle2, Info } from "lucide-react";
 import { Link } from "react-router-dom";
-import axios from "axios";
+import api from "@/lib/api";
 
 const Porter = () => {
   const [porters, setPorters] = useState([]);
@@ -13,7 +13,7 @@ const Porter = () => {
   useEffect(() => {
     const fetchPorters = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/api/porters");
+        const response = await api.get("/porters");
         setPorters(response.data.data);
       } catch (error) {
         console.error("Gagal memuat data porter:", error);

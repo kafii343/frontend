@@ -11,6 +11,7 @@ import {
   CardContent,
 } from "@/components/ui/card";
 import { Users, Clock, CheckCircle } from "lucide-react";
+import api from "@/lib/api";
 
 const Guide = () => {
   const [guides, setGuides] = useState<any[]>([]);
@@ -19,9 +20,8 @@ const Guide = () => {
   useEffect(() => {
     const fetchGuides = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/guides");
-        const result = await response.json();
-        setGuides(result.data || []);
+        const response = await api.get("/guides");
+        setGuides(response.data.data || []);
       } catch (error) {
         console.error("Gagal mengambil data guide:", error);
       } finally {

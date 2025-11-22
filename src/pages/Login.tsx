@@ -6,7 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Shield, User, X, Eye, EyeOff } from "lucide-react";
-import { API_BASE_URL } from "@/env";
+import api from "@/lib/api";
+import { useAuthStore } from "@/store";
 
 const Login = () => {
   const { toast } = useToast();
@@ -29,6 +30,9 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showAdminPassword, setShowAdminPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  // Import auth actions from the store
+  const { login, error } = useAuthStore();
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -59,54 +63,25 @@ const Login = () => {
     setIsSubmitting(true);
 
     try {
-      const endpoint = loginType === "admin" 
-        ? `${API_BASE_URL}/api/auth/admin/login`  
-        : `${API_BASE_URL}/api/auth/login`;
+      // Use the store login function which will use the new API
+      await login(formData.email, formData.password, loginType === "admin");
 
-      const response = await fetch(endpoint, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
+      toast({
+        title: "Login Successful",
+        description: `Welcome back!`,
       });
 
-      const data = await response.json();
-
-      if (data.success) {
-        console.log("Token received:", data.data.token);
-        
-        // Store user data and token
-        localStorage.setItem("token", data.data.token);
-        localStorage.setItem("user", JSON.stringify(data.data.user));
-        localStorage.setItem("role", data.data.user.role); // Save role to localStorage
-        
-        console.log("Saved to localStorage:", { token: data.data.token, role: data.data.user.role });
-        console.log("Navigating to home");
-        
-        toast({
-          title: "Login Successful",
-          description: `Welcome back, ${data.data.user.username}!`,
-        });
-
-        // Redirect based on user role after successful login
-        if (data.data.user.role === 'admin') {
-          navigate("/admin/dashboard");
-        } else {
-          navigate("/");
-        }
+      // Redirect based on user role after successful login
+      if (loginType === "admin") {
+        navigate("/admin/dashboard");
       } else {
-        toast({
-          title: "Login Failed",
-          description: data.message || "Invalid credentials",
-          variant: "destructive",
-        });
+        navigate("/");
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Login error:", error);
       toast({
         title: "Login Failed",
-        description: "An error occurred during login. Please try again.",
+        description: error.message || "Invalid credentials",
         variant: "destructive",
       });
     } finally {
@@ -116,7 +91,7 @@ const Login = () => {
 
   const handleAdminRegistration = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Password confirmation check
     if (adminRegData.password !== adminRegData.confirmPassword) {
       toast({
@@ -140,40 +115,33 @@ const Login = () => {
     setIsSubmittingAdmin(true);
 
     try {
-      const response = await fetch("http://localhost:5000/api/auth/register/admin", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          username: adminRegData.username,
-          email: adminRegData.email,
-          password: adminRegData.password,
-          admin_code: adminRegData.adminCode,
-        }),
+      // Use the new API instance with proper environment variable
+      const response = await api.post("/auth/register/admin", {
+        username: adminRegData.username,
+        email: adminRegData.email,
+        password: adminRegData.password,
+        admin_code: adminRegData.adminCode,
       });
 
-      const data = await response.json();
-
-      if (data.success) {
+      if (response.data.success) {
         toast({
           title: "Admin Registration Successful",
-          description: `Admin account for ${data.data.user.username} created successfully!`,
+          description: `Admin account for ${response.data.data.user.username} created successfully!`,
         });
         setShowAdminRegForm(false);
         setAdminRegData({ username: "", email: "", password: "", confirmPassword: "", adminCode: "" });
       } else {
         toast({
           title: "Admin Registration Failed",
-          description: data.message || "An error occurred during admin registration",
+          description: response.data.message || "An error occurred during admin registration",
           variant: "destructive",
         });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Admin registration error:", error);
       toast({
         title: "Admin Registration Failed",
-        description: "An error occurred during admin registration. Please try again.",
+        description: error.response?.data?.message || "An error occurred during admin registration. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -199,22 +167,22 @@ const Login = () => {
                   )}
                 </div>
                 <CardTitle className="text-2xl font-bold text-gray-800">
-                  {showAdminRegForm 
-                    ? "Admin Registration" 
-                    : loginType === "admin" 
-                      ? "Admin Login" 
+                  {showAdminRegForm
+                    ? "Admin Registration"
+                    : loginType === "admin"
+                      ? "Admin Login"
                       : "User Login"}
                 </CardTitle>
                 <CardDescription className="text-gray-600 mt-2">
                   {showAdminRegForm
                     ? "Create a new admin account (requires admin authentication)"
-                    : loginType === "admin" 
-                      ? "Access the admin panel" 
+                    : loginType === "admin"
+                      ? "Access the admin panel"
                       : "Sign in to your account"}
                 </CardDescription>
               </div>
             </CardHeader>
-            
+
             <CardContent className="p-6">
               {!showAdminRegForm ? (
                 <>
@@ -238,7 +206,7 @@ const Login = () => {
                       Admin
                     </Button>
                   </div>
-                  
+
                   <form onSubmit={handleLogin} className="space-y-5">
                     <div className="space-y-3">
                       <Label htmlFor="email" className="text-gray-700 font-medium">Email</Label>
@@ -252,7 +220,7 @@ const Login = () => {
                         className="py-3 px-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
                       />
                     </div>
-                    
+
                     <div className="space-y-3">
                       <Label htmlFor="password" className="text-gray-700 font-medium">Password</Label>
                       <div className="relative">
@@ -275,9 +243,9 @@ const Login = () => {
                         </button>
                       </div>
                     </div>
-                    
-                    <Button 
-                      type="submit" 
+
+                    <Button
+                      type="submit"
                       className="w-full py-6 text-lg font-semibold bg-gradient-to-r from-primary to-forest-light hover:from-primary/90 hover:to-forest-light/90 transition-all duration-300 shadow-lg hover:shadow-xl"
                       disabled={isSubmitting}
                     >
@@ -291,14 +259,14 @@ const Login = () => {
                       )}
                     </Button>
                   </form>
-                  
+
                   <div className="mt-6 text-center text-sm text-gray-600">
                     Don't have an account?{" "}
                     <Link to="/register" className="text-primary font-medium underline-offset-4 hover:underline hover:text-forest-light transition-colors">
                       Sign up
                     </Link>
                     <div className="mt-2">
-                      <button 
+                      <button
                         onClick={() => setShowAdminRegForm(true)}
                         className="text-primary font-medium underline-offset-4 hover:underline hover:text-forest-light transition-colors text-sm"
                       >
@@ -321,7 +289,7 @@ const Login = () => {
                       <X className="h-4 w-4" />
                     </Button>
                   </div>
-                  
+
                   <form onSubmit={handleAdminRegistration} className="space-y-5">
                     <div className="space-y-3">
                       <Label htmlFor="admin-username" className="text-gray-700 font-medium">Full Name</Label>
@@ -335,7 +303,7 @@ const Login = () => {
                         className="py-3 px-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
                       />
                     </div>
-                    
+
                     <div className="space-y-3">
                       <Label htmlFor="admin-email" className="text-gray-700 font-medium">Email</Label>
                       <Input
@@ -348,7 +316,7 @@ const Login = () => {
                         className="py-3 px-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
                       />
                     </div>
-                    
+
                     <div className="space-y-3">
                       <Label htmlFor="admin-password" className="text-gray-700 font-medium">Password</Label>
                       <div className="relative">
@@ -371,7 +339,7 @@ const Login = () => {
                         </button>
                       </div>
                     </div>
-                    
+
                     <div className="space-y-3">
                       <Label htmlFor="admin-confirm-password" className="text-gray-700 font-medium">Confirm Password</Label>
                       <div className="relative">
@@ -394,7 +362,7 @@ const Login = () => {
                         </button>
                       </div>
                     </div>
-                    
+
                     <div className="space-y-3">
                       <Label htmlFor="admin-code" className="text-gray-700 font-medium">Admin Code</Label>
                       <Input
@@ -407,9 +375,9 @@ const Login = () => {
                         className="py-3 px-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
                       />
                     </div>
-                    
-                    <Button 
-                      type="submit" 
+
+                    <Button
+                      type="submit"
                       className="w-full py-6 text-lg font-semibold bg-gradient-to-r from-primary to-forest-light hover:from-primary/90 hover:to-forest-light/90 transition-all duration-300 shadow-lg hover:shadow-xl"
                       disabled={isSubmittingAdmin}
                     >

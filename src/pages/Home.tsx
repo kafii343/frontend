@@ -3,19 +3,20 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import heroImage from "@/assets/hero-sulawesi-mountains.jpg";
-import { 
-  Users, 
-  MapPin, 
-  Star, 
-  ArrowRight, 
-  Compass, 
-  Backpack, 
+import {
+  Users,
+  MapPin,
+  Star,
+  ArrowRight,
+  Compass,
+  Backpack,
   UserCheck,
   Clock,
   Shield,
   Award
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import api from "@/lib/api";
 
 // Define Mountain type
 interface Mountain {
@@ -38,21 +39,21 @@ const Home = () => {
   useEffect(() => {
     const fetchMountains = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/mountains");
-        if (response.ok) {
-          const result = await response.json();
-          
+        const response = await api.get("/mountains");
+        if (response.data.success) {
+          const result = response.data;
+
           // Filter mountains to only include specific ones: Bawakaraeng, Lembah Lohe, and Bulu Baria
           // Exclude Lompobattang as requested
-          const filteredMountains = result.data.filter((mountain: Mountain) => 
-            mountain.name === "Gunung Bawakaraeng" || 
-            mountain.name === "Lembah Lohe" || 
+          const filteredMountains = result.data.filter((mountain: Mountain) =>
+            mountain.name === "Gunung Bawakaraeng" ||
+            mountain.name === "Lembah Lohe" ||
             mountain.name === "Gunung Bulu Baria"
           );
-          
+
           setMountains(filteredMountains);
         } else {
-          console.error("Failed to fetch mountains:", response.status);
+          console.error("Failed to fetch mountains:", response.data.message);
         }
       } catch (error) {
         console.error("Error fetching mountains:", error);
@@ -111,15 +112,33 @@ const Home = () => {
     },
   ];
 
+  // Helper function to get the correct image URL based on the backend response
+  const getImageUrl = (imageUrl: string) => {
+    if (!imageUrl) return "/placeholder-mountain.jpg";
+
+    // Check if it's already an absolute URL or starts with http
+    if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+      return imageUrl;
+    }
+
+    // If it starts with /uploads, prepend the base URL
+    if (imageUrl.startsWith('/uploads')) {
+      return `${api.defaults.baseURL}${imageUrl}`;
+    }
+
+    // Otherwise, prepend /uploads
+    return `${api.defaults.baseURL}/uploads${imageUrl}`;
+  };
+
   return (
     <>
       <main>
         {/* Hero Section */}
         <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-          <div 
+          <div
             className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-            style={{ 
-              backgroundImage: `linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url(${heroImage})` 
+            style={{
+              backgroundImage: `linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url(${heroImage})`
             }}
           />
           <div className="relative z-10 text-center max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
@@ -134,7 +153,7 @@ const Home = () => {
               </span>
             </h1>
             <p className="text-xl md:text-2xl text-white/90 mb-8 max-w-3xl mx-auto leading-relaxed">
-              Temukan petualangan tak terlupakan bersama Carten'z. Open trip, guide profesional, 
+              Temukan petualangan tak terlupakan bersama Carten'z. Open trip, guide profesional,
               dan porter berpengalaman untuk eksplorasi gunung-gunung menakjubkan Sulawesi Selatan.
             </p>
             <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
@@ -206,7 +225,7 @@ const Home = () => {
                 <span className="text-primary text-sm font-medium">Destinasi Populer</span>
               </div>
               <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">
-                Gunung Terbaik 
+                Gunung Terbaik
                 <span className="text-primary"> Sulawesi Selatan</span>
               </h2>
               <p className="text-lg text-muted-foreground max-w-2xl mx-auto px-4">
@@ -224,7 +243,7 @@ const Home = () => {
                   <Card key={mountain.id} className="overflow-hidden group hover:shadow-xl transition-all duration-300 border-0 bg-white shadow-lg hover:shadow-2xl transform hover:-translate-y-2">
                     <div className="aspect-video relative overflow-hidden">
                       <img
-                        src={`http://localhost:5000${mountain.image_url}`}
+                        src={getImageUrl(mountain.image_url)}
                         alt={mountain.name}
                         className="object-cover w-full h-full group-hover:scale-110 transition-transform duration-700"
                         onError={(e) => {
@@ -243,10 +262,10 @@ const Home = () => {
                       <CardTitle className="flex items-start justify-between text-gray-800 group-hover:text-primary transition-colors font-bold text-xl">
                         <span>{mountain.name}</span>
                         <Badge variant="outline" className={`text-xs px-3 py-1 ${
-                          mountain.difficulty === "Mudah" 
-                            ? "text-green-600 border-green-300" 
-                            : mountain.difficulty === "Menengah" 
-                              ? "text-yellow-600 border-yellow-300" 
+                          mountain.difficulty === "Mudah"
+                            ? "text-green-600 border-green-300"
+                            : mountain.difficulty === "Menengah"
+                              ? "text-yellow-600 border-yellow-300"
                               : "text-red-600 border-red-300"
                         }`}>
                           {mountain.difficulty}
@@ -296,7 +315,7 @@ const Home = () => {
                 <span className="text-primary text-sm font-medium">Mengapa Carten'z</span>
               </div>
               <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">
-                Dipercaya Ribuan 
+                Dipercaya Ribuan
                 <span className="text-primary"> Petualang</span>
               </h2>
             </div>
@@ -321,16 +340,16 @@ const Home = () => {
 
         {/* CTA Section */}
         <section className="py-24 bg-gradient-to-br from-primary to-forest-light relative overflow-hidden">
-          <div className="absolute inset-0 bg-[url('/mountain-pattern.svg')] opacity-10 mix-blend-soft-light"></div>
+          <div className="absolute inset-0 bg-[url('/mountain-pattern.svg')] opacity-10 mix-blur-soft-light"></div>
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10 max-w-5xl">
             <div className="text-center max-w-3xl mx-auto px-4">
               <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-6 leading-tight">
-                Siap Untuk Petualangan 
+                Siap Untuk Petualangan
                 <br />
                 Yang Tak Terlupakan?
               </h2>
               <p className="text-xl text-white/90 mb-10 max-w-2xl mx-auto px-4">
-                Bergabunglah dengan ribuan petualang lainnya yang telah merasakan keindahan 
+                Bergabunglah dengan ribuan petualang lainnya yang telah merasakan keindahan
                 Sulawesi Selatan bersama Carten'z
               </p>
               <div className="flex flex-col sm:flex-row gap-6 justify-center items-center px-4">

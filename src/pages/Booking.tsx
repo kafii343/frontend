@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
+import api from "@/lib/api";
 import {
   Calendar,
   Users,
@@ -64,11 +65,10 @@ const Booking = () => {
   // Effect to fetch porters data
   useEffect(() => {
     // Fetch all available porters
-    fetch(`http://localhost:5000/api/porters`)
-      .then(response => response.json())
-      .then(data => {
-        if (data.success) {
-          setAvailablePorters(data.data);
+    api.get("/porters")
+      .then(response => {
+        if (response.data.success) {
+          setAvailablePorters(response.data.data);
         }
       })
       .catch(error => {
@@ -82,11 +82,10 @@ const Booking = () => {
 
     if (guideId) {
       // Fetch specific guide by ID
-      fetch(`http://localhost:5000/api/guides`)
-        .then(response => response.json())
-        .then(data => {
-          if (data.success) {
-            const guide = data.data.find(g => g.id === guideId);
+      api.get("/guides")
+        .then(response => {
+          if (response.data.success) {
+            const guide = response.data.data.find(g => g.id === guideId);
             if (guide) {
               setSelectedGuide(guide);
             }
@@ -99,11 +98,10 @@ const Booking = () => {
 
     if (porterId) {
       // Fetch specific porter by ID
-      fetch(`http://localhost:5000/api/porters`)
-        .then(response => response.json())
-        .then(data => {
-          if (data.success) {
-            const porter = data.data.find(p => p.id === porterId);
+      api.get("/porters")
+        .then(response => {
+          if (response.data.success) {
+            const porter = response.data.data.find(p => p.id === porterId);
             if (porter) {
               setSelectedPorter(porter);
             }
@@ -116,11 +114,10 @@ const Booking = () => {
 
     if (tripId) {
       // Fetch specific open trip by ID
-      fetch(`http://localhost:5000/api/open-trips`)
-        .then(response => response.json())
-        .then(data => {
-          if (data.success) {
-            const trip = data.data.find(t => t.id === tripId);
+      api.get("/open-trips")
+        .then(response => {
+          if (response.data.success) {
+            const trip = response.data.data.find(t => t.id === tripId);
             if (trip) {
               // If needed, we could store the trip details in state
               // For now, we just need the trip ID for booking
