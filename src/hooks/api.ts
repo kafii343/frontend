@@ -11,7 +11,7 @@ export const useMountains = () => {
     const fetchMountains = async () => {
       try {
         setLoading(true);
-        const response = await api.get('/mountains');
+        const response = await api.get('api/mountains');
         if (response.data.success) {
           setMountains(response.data.data);
         } else {
@@ -40,7 +40,7 @@ export const useGuides = () => {
     const fetchGuides = async () => {
       try {
         setLoading(true);
-        const response = await api.get('/guides');
+        const response = await api.get('api/guides');
         if (response.data.success) {
           setGuides(response.data.data);
         } else {
@@ -69,7 +69,7 @@ export const usePorters = () => {
     const fetchPorters = async () => {
       try {
         setLoading(true);
-        const response = await api.get('/porters');
+        const response = await api.get('api/porters');
         if (response.data.success) {
           setPorters(response.data.data);
         } else {
@@ -98,7 +98,7 @@ export const useOpenTrips = () => {
     const fetchOpenTrips = async () => {
       try {
         setLoading(true);
-        const response = await api.get('/open-trips');
+        const response = await api.get('api/open-trips');
         if (response.data.success) {
           setOpenTrips(response.data.data);
         } else {
@@ -127,7 +127,7 @@ export const useBookings = () => {
     const fetchBookings = async () => {
       try {
         setLoading(true);
-        const response = await api.get('/bookings');
+        const response = await api.get('api/bookings');
         if (response.data.success) {
           setBookings(response.data.data);
         } else {

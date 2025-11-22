@@ -65,7 +65,7 @@ const Booking = () => {
   // Effect to fetch porters data
   useEffect(() => {
     // Fetch all available porters
-    api.get("/porters")
+    api.get("api/porters")
       .then(response => {
         if (response.data.success) {
           setAvailablePorters(response.data.data);
@@ -82,7 +82,7 @@ const Booking = () => {
 
     if (guideId) {
       // Fetch specific guide by ID
-      api.get("/guides")
+      api.get("api/guides")
         .then(response => {
           if (response.data.success) {
             const guide = response.data.data.find(g => g.id === guideId);
@@ -98,7 +98,7 @@ const Booking = () => {
 
     if (porterId) {
       // Fetch specific porter by ID
-      api.get("/porters")
+      api.get("api/porters")
         .then(response => {
           if (response.data.success) {
             const porter = response.data.data.find(p => p.id === porterId);
@@ -114,7 +114,7 @@ const Booking = () => {
 
     if (tripId) {
       // Fetch specific open trip by ID
-      api.get("/open-trips")
+      api.get("api/open-trips")
         .then(response => {
           if (response.data.success) {
             const trip = response.data.data.find(t => t.id === tripId);

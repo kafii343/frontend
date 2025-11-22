@@ -18,7 +18,7 @@ const OpenTrip = () => {
   useEffect(() => {
     const fetchTrips = async () => {
       try {
-        const response = await api.get("/open-trips");
+        const response = await api.get("api/open-trips");
         console.log("TRIPS API:", response.data.data);
 
         if (response.data?.data?.length > 0) {

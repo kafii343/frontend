@@ -13,7 +13,7 @@ const Porter = () => {
   useEffect(() => {
     const fetchPorters = async () => {
       try {
-        const response = await api.get("/porters");
+        const response = await api.get("api/porters");
         setPorters(response.data.data);
       } catch (error) {
         console.error("Gagal memuat data porter:", error);

@@ -20,7 +20,7 @@ const Guide = () => {
   useEffect(() => {
     const fetchGuides = async () => {
       try {
-        const response = await api.get("/guides");
+        const response = await api.get("api/guides");
         setGuides(response.data.data || []);
       } catch (error) {
         console.error("Gagal mengambil data guide:", error);
