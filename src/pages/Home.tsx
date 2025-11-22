@@ -39,7 +39,7 @@ const Home = () => {
   useEffect(() => {
     const fetchMountains = async () => {
       try {
-        const response = await api.get("/mountains");
+        const response = await api.get("api/mountains");
         if (response.data.success) {
           const result = response.data;
 
