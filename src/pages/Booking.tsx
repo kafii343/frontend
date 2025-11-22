@@ -335,13 +335,18 @@ const Booking = () => {
         item_details: itemDetails
       });
 
-      // Then request token from Midtrans using the axios instance
+      // Then request token from Midtrans using the axios instance - DO NOT include auth header for payment creation
       const response = await api.post('/api/payment/create-transaction', {
         booking_id: actualBookingId, // Use the actual booking ID returned from backend
         amount: totalPrice,
         customer_email: formData.email,
         customer_name: formData.fullName,
         item_details: itemDetails
+      }, {
+        headers: {
+          // Don't include Authorization header for payment creation endpoint
+          'Content-Type': 'application/json'
+        }
       });
 
       const data = response.data;
