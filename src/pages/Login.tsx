@@ -61,7 +61,7 @@ const Login = () => {
     try {
       const endpoint = loginType === "admin" 
         ? `${API_BASE_URL}/api/auth/admin/login`  
-        : `${API_BASE_URL}:5000/api/auth/login`;
+        : `${API_BASE_URL}/api/auth/login`;
 
       const response = await fetch(endpoint, {
         method: "POST",
