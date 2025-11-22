@@ -1,0 +1,203 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Carten'z Mountain Adventure Platform Design System */
+
+@layer base {
+  :root {
+    /* Mountain-inspired color palette */
+    --background: 45 20% 98%;
+    --foreground: 160 30% 15%;
+
+    --card: 45 15% 96%;
+    --card-foreground: 160 25% 20%;
+
+    --popover: 45 15% 96%;
+    --popover-foreground: 160 25% 20%;
+
+    /* Deep forest green primary */
+    --primary: 160 60% 25%;
+    --primary-foreground: 45 20% 98%;
+
+    /* Earth tone secondary */
+    --secondary: 30 35% 88%;
+    --secondary-foreground: 160 30% 15%;
+
+    --muted: 45 10% 92%;
+    --muted-foreground: 160 15% 45%;
+
+    /* Mountain sky accent */
+    --accent: 200 70% 85%;
+    --accent-foreground: 160 30% 15%;
+
+    --destructive: 0 75% 55%;
+    --destructive-foreground: 45 20% 98%;
+
+    --border: 45 15% 85%;
+    --input: 45 15% 85%;
+    --ring: 160 60% 25%;
+
+    --radius: 0.75rem;
+
+    /* Custom Adventure Theme Colors */
+    --mountain-peak: 220 25% 95%;
+    --forest-deep: 160 70% 15%;
+    --forest-light: 160 40% 35%;
+    --earth-warm: 30 45% 65%;
+    --sunset-orange: 25 85% 60%;
+    --sky-blue: 200 80% 70%;
+
+    /* Gradients */
+    --gradient-hero: linear-gradient(135deg, hsl(160 60% 25%), hsl(160 40% 35%));
+    --gradient-mountain: linear-gradient(180deg, hsl(220 25% 95%), hsl(200 30% 85%));
+    --gradient-sunset: linear-gradient(135deg, hsl(25 85% 60%), hsl(35 75% 55%));
+    --gradient-forest: linear-gradient(135deg, hsl(160 70% 15%), hsl(160 40% 35%));
+
+    /* Enhanced Shadows */
+    --shadow-mountain: 0 20px 25px -5px hsl(160 60% 25% / 0.2), 0 8px 10px -6px hsl(160 60% 25% / 0.15);
+    --shadow-card: 0 10px 15px -3px hsl(160 20% 50% / 0.1), 0 4px 6px -2px hsl(160 20% 50% / 0.05);
+    --shadow-button: 0 4px 6px -1px hsl(160 60% 25% / 0.2), 0 2px 4px -1px hsl(160 60% 25% / 0.06);
+    --shadow-lg: 0 10px 15px -3px hsl(0 0% 0% / 0.1), 0 4px 6px -2px hsl(0 0% 0% / 0.05);
+    --shadow-xl: 0 20px 25px -5px hsl(0 0% 0% / 0.1), 0 10px 10px -5px hsl(0 0% 0% / 0.04);
+    --shadow-2xl: 0 25px 50px -12px hsl(0 0% 0% / 0.25);
+
+    /* Animations */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-bounce: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+    --sidebar-background: 0 0% 98%;
+
+    --sidebar-foreground: 240 5.3% 26.1%;
+
+    --sidebar-primary: 240 5.9% 10%;
+
+    --sidebar-primary-foreground: 0 0% 98%;
+
+    --sidebar-accent: 240 4.8% 95.9%;
+
+    --sidebar-accent-foreground: 240 5.9% 10%;
+
+    --sidebar-border: 220 13% 91%;
+
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans;
+  }
+}
+
+@layer components {
+  .gradient-hero {
+    background: var(--gradient-hero);
+  }
+  
+  .gradient-mountain {
+    background: var(--gradient-mountain);
+  }
+  
+  .gradient-sunset {
+    background: var(--gradient-sunset);
+  }
+  
+  .gradient-forest {
+    background: var(--gradient-forest);
+  }
+  
+  .shadow-mountain {
+    box-shadow: var(--shadow-mountain);
+  }
+  
+  .shadow-card {
+    box-shadow: var(--shadow-card);
+  }
+  
+  .shadow-button {
+    box-shadow: var(--shadow-button);
+  }
+  
+  .shadow-lg {
+    box-shadow: var(--shadow-lg);
+  }
+  
+  .shadow-xl {
+    box-shadow: var(--shadow-xl);
+  }
+  
+  .shadow-2xl {
+    box-shadow: var(--shadow-2xl);
+  }
+  
+  .glass {
+    background: hsl(var(--background) / 0.75);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+  
+  .glass-card {
+    background: hsl(var(--card) / 0.8);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid hsl(var(--border) / 0.2);
+  }
+  
+  .glass-nav {
+    background: hsl(var(--background) / 0.85);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid hsl(var(--border) / 0.2);
+  }
+  
+  .transition-smooth {
+    transition: var(--transition-smooth);
+  }
+  
+  .transition-bounce {
+    transition: var(--transition-bounce);
+  }
+}
