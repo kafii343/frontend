@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Shield, User, X, Eye, EyeOff } from "lucide-react";
+import { API_BASE_URL } from "@/env";
 
 const Login = () => {
   const { toast } = useToast();
@@ -59,8 +60,8 @@ const Login = () => {
 
     try {
       const endpoint = loginType === "admin" 
-        ? "http://localhost:5000/api/auth/admin/login" 
-        : "http://localhost:5000/api/auth/login";
+        ? `${API_BASE_URL}/api/auth/admin/login`  
+        : `${API_BASE_URL}:5000/api/auth/login`;
 
       const response = await fetch(endpoint, {
         method: "POST",
