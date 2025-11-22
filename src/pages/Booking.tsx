@@ -244,174 +244,170 @@ const Booking = () => {
   };
 
   // Handle Midtrans payment
-const handlePayment = async () => {
-  if (!validateForm()) return;
+  const handlePayment = async () => {
+    if (!validateForm()) return;
 
-  try {
-    setIsProcessing(true);
+    try {
+      setIsProcessing(true);
 
-    // Generate a booking code that's not UUID but follows ORDER-XXXX format
-    const orderId = `ORDER-${Date.now()}`;
+      // Generate a booking code that's not UUID but follows ORDER-XXXX format
+      const orderId = `ORDER-${Date.now()}`;
 
-    const itemDetails = [
-      {
-        id: 'tour-package',
-        name: bookingSummary.service,
-        quantity: bookingSummary.participants,
-        price: bookingSummary.basePrice,
-        category: 'Tour Package'
-      },
-      ...bookingSummary.additionalServices.map((service, index) => ({
-        id: `add-service-${index}`,
-        name: service.name,
-        quantity: 1,
-        price: service.price,
-        category: 'Additional Service'
-      })),
-      {
-        id: 'insurance',
-        name: 'Asuransi Perjalanan',
-        quantity: bookingSummary.participants,
-        price: bookingSummary.insurance,
-        category: 'Insurance'
-      },
-      {
-        id: 'admin-fee',
-        name: 'Biaya Admin',
-        quantity: 1,
-        price: bookingSummary.adminFee,
-        category: 'Admin Fee'
-      }
-    ];
+      const itemDetails = [
+        {
+          id: 'tour-package',
+          name: bookingSummary.service,
+          quantity: bookingSummary.participants,
+          price: bookingSummary.basePrice,
+          category: 'Tour Package'
+        },
+        ...bookingSummary.additionalServices.map((service, index) => ({
+          id: `add-service-${index}`,
+          name: service.name,
+          quantity: 1,
+          price: service.price,
+          category: 'Additional Service'
+        })),
+        {
+          id: 'insurance',
+          name: 'Asuransi Perjalanan',
+          quantity: bookingSummary.participants,
+          price: bookingSummary.insurance,
+          category: 'Insurance'
+        },
+        {
+          id: 'admin-fee',
+          name: 'Biaya Admin',
+          quantity: 1,
+          price: bookingSummary.adminFee,
+          category: 'Admin Fee'
+        }
+      ];
 
-    // Base URL backend - Updated to use the correct API URL from environment
-    const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+      // Get trip ID from URL parameter to include in booking
+      const tripId = searchParams.get('trip');
 
-    // Get trip ID from URL parameter to include in booking
-    const tripId = searchParams.get('trip');
+      // First, create the booking in the database
+      const bookingData = {
+        booking_id: orderId, // Use the ORDER-XXXX format instead of UUID
+        customer_name: formData.fullName,
+        customer_email: formData.email,
+        customer_phone: formData.phone,
+        customer_emergency_contact: formData.emergencyContact, // Backend expects this exact name
+        service_type: formData.serviceType || 'open-trip', // Provide a default value if not set
+        start_date: formData.startDate ? new Date(formData.startDate).toISOString().split('T')[0] : null, // Format to YYYY-MM-DD
+        total_participants: formData.participants,
+        total_price: totalPrice,
+        special_requests: formData.specialRequests,
+        dietary_requirements: formData.dietary,
+        medical_conditions: formData.medical,
+        need_porter: selectedAdditionalPorter ? true : false,
+        need_documentation: formData.documentation,
+        need_equipment: formData.equipment,
+        need_transport: formData.transport,
+        base_price: bookingSummary.basePrice,
+        additional_services_price: totalAdditional,
+        insurance_price: bookingSummary.insurance * bookingSummary.participants,
+        admin_fee: bookingSummary.adminFee,
+        open_trip_id: tripId || null // Include the trip ID if available
+      };
 
-    // First, create the booking in the database
-    const bookingData = {
-      booking_id: orderId, // Use the ORDER-XXXX format instead of UUID
-      customer_name: formData.fullName,
-      customer_email: formData.email,
-      customer_phone: formData.phone,
-      customer_emergency_contact: formData.emergencyContact, // Backend expects this exact name
-      service_type: formData.serviceType || 'open-trip', // Provide a default value if not set
-      start_date: formData.startDate ? new Date(formData.startDate).toISOString().split('T')[0] : null, // Format to YYYY-MM-DD
-      total_participants: formData.participants,
-      total_price: totalPrice,
-      special_requests: formData.specialRequests,
-      dietary_requirements: formData.dietary,
-      medical_conditions: formData.medical,
-      need_porter: selectedAdditionalPorter ? true : false,
-      need_documentation: formData.documentation,
-      need_equipment: formData.equipment,
-      need_transport: formData.transport,
-      base_price: bookingSummary.basePrice,
-      additional_services_price: totalAdditional,
-      insurance_price: bookingSummary.insurance * bookingSummary.participants,
-      admin_fee: bookingSummary.adminFee,
-      open_trip_id: tripId || null // Include the trip ID if available
-    };
+      console.log('Creating booking with data:', bookingData);
 
-    console.log('Creating booking with data:', bookingData);
+      // Create booking record using the axios instance
+      const bookingResponse = await api.post('/api/bookings/payment', bookingData, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
 
-    // Create booking record
-    const bookingResponse = await fetch(`${API_BASE_URL}/api/bookings/payment`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify(bookingData)
-    });
+      console.log('Booking creation response:', bookingResponse.data);
 
-    if (!bookingResponse.ok) {
-      const bookingError = await bookingResponse.text(); // Get error text
-      console.error('Booking creation error:', bookingError);
-      throw new Error(`Failed to create booking: ${bookingError}`);
-    }
+      // Use the actual booking code or id from the response
+      const actualBookingId = bookingResponse.data.data?.booking_code || bookingResponse.data.data?.id || orderId;
+      console.log('Using booking ID for transaction:', actualBookingId);
 
-    const bookingResult = await bookingResponse.json();
-    console.log('Booking creation response:', bookingResult);
+      console.log('Requesting payment transaction with data:', {
+        booking_id: actualBookingId,
+        amount: totalPrice,
+        customer_email: formData.email,
+        customer_name: formData.fullName,
+        item_details: itemDetails
+      });
 
-    // Use the actual booking code or id from the response
-    const actualBookingId = bookingResult.data?.booking_code || bookingResult.data?.id || orderId;
-    console.log('Using booking ID for transaction:', actualBookingId);
-
-    console.log('Requesting payment transaction with data:', {
-      booking_id: actualBookingId,
-      amount: totalPrice,
-      customer_email: formData.email,
-      customer_name: formData.fullName,
-      item_details: itemDetails
-    });
-
-    // Then request token from Midtrans
-    const response = await fetch(`${API_BASE_URL}/api/payment/create-transaction`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      },
-      body: JSON.stringify({
+      // Then request token from Midtrans using the axios instance
+      const response = await api.post('/api/payment/create-transaction', {
         booking_id: actualBookingId, // Use the actual booking ID returned from backend
         amount: totalPrice,
         customer_email: formData.email,
         customer_name: formData.fullName,
         item_details: itemDetails
-      })
-    });
-
-    // Check if the response is ok before parsing JSON to avoid the 'Unexpected token' error
-    if (!response.ok) {
-      const errorText = await response.text(); // Get raw text response
-      console.error('Response error:', response.status, errorText);
-      throw new Error(`HTTP error! status: ${response.status}. ${errorText || 'Gagal membuat transaksi pembayaran.'}`);
-    }
-
-    const data = await response.json();
-
-    console.log('Midtrans API response:', data);
-
-    if (!data.success || !data.token) {
-      // Handle error case properly, checking for both error and message properties
-      const errorMessage = data.message || data.error || 'Token pembayaran tidak valid atau gagal membuat transaksi.';
-      throw new Error(errorMessage);
-    }
-
-    // If token is successfully received
-    if (data.token) {
-      toast({
-        title: "Mengarahkan ke Pembayaran",
-        description: "Anda akan dialihkan ke halaman pembayaran...",
       });
 
-      if (window.snap) {
-        window.snap.pay(data.token, {
-          onSuccess: function(result) {
-            console.log('✅ Payment Success:', result);
-            // Update status to 'paid' using the actual booking ID
-            fetch(`${API_BASE_URL}/api/payment/update-status`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
+      const data = response.data;
+
+      console.log('Midtrans API response:', data);
+
+      if (!data.success || !data.token) {
+        // Handle error case properly, checking for both error and message properties
+        const errorMessage = data.message || data.error || 'Token pembayaran tidak valid atau gagal membuat transaksi.';
+        throw new Error(errorMessage);
+      }
+
+      // If token is successfully received
+      if (data.token) {
+        toast({
+          title: "Mengarahkan ke Pembayaran",
+          description: "Anda akan dialihkan ke halaman pembayaran...",
+        });
+
+        if (window.snap) {
+          window.snap.pay(data.token, {
+            onSuccess: function(result) {
+              console.log('✅ Payment Success:', result);
+              // Update status to 'paid' using the actual booking ID
+              api.post('/api/payment/update-status', {
                 booking_id: actualBookingId, // Use the actual booking ID
                 status: 'paid',
                 payment_data: result
               })
-            })
-            .then(response => response.json())
-            .then(updateResult => {
-              if (updateResult.success) {
+              .then(updateResult => {
+                console.log('Payment success, status updated:', updateResult.data);
+                if (updateResult.data.success) {
+                  toast({
+                    title: "Pembayaran Berhasil",
+                    description: "Terima kasih! Pembayaran telah diproses.",
+                  });
+
+                  // Prepare booking details for success page
+                  const bookingDetails = {
+                    tripName: bookingSummary.service,
+                    date: bookingSummary.dates,
+                    participants: bookingSummary.participants,
+                    totalPrice: totalPrice,
+                    referenceNumber: actualBookingId, // Use actual booking ID
+                    guideName: selectedGuide?.name,
+                    guideContact: selectedGuide?.contact || selectedGuide?.phone,
+                    porterName: selectedPorter?.name,
+                    porterContact: selectedPorter?.contact || selectedPorter?.phone,
+                    bookingId: actualBookingId // Use actual booking ID
+                  };
+
+                  // Navigate to success page with booking details
+                  navigate('/booking-success', { state: { bookingDetails } });
+                } else {
+                  console.error('Failed to update booking status:', updateResult.data);
+                }
+              })
+              .catch(err => {
+                console.error('Error updating booking:', err);
                 toast({
-                  title: "Pembayaran Berhasil",
-                  description: "Terima kasih! Pembayaran telah diproses.",
+                  title: "Terjadi Kesalahan",
+                  description: "Pembayaran berhasil tetapi gagal memperbarui status pemesanan.",
+                  variant: "destructive",
                 });
 
-                // Prepare booking details for success page
+                // Navigate anyway with booking details
                 const bookingDetails = {
                   tripName: bookingSummary.service,
                   date: bookingSummary.dates,
@@ -425,135 +421,97 @@ const handlePayment = async () => {
                   bookingId: actualBookingId // Use actual booking ID
                 };
 
-                // Navigate to success page with booking details
                 navigate('/booking-success', { state: { bookingDetails } });
-              } else {
-                console.error('Failed to update booking status:', updateResult);
-              }
-            })
-            .catch(err => {
-              console.error('Error updating booking:', err);
-              toast({
-                title: "Terjadi Kesalahan",
-                description: "Pembayaran berhasil tetapi gagal memperbarui status pemesanan.",
-                variant: "destructive",
               });
+            },
 
-              // Navigate anyway with booking details
-              const bookingDetails = {
-                tripName: bookingSummary.service,
-                date: bookingSummary.dates,
-                participants: bookingSummary.participants,
-                totalPrice: totalPrice,
-                referenceNumber: actualBookingId, // Use actual booking ID
-                guideName: selectedGuide?.name,
-                guideContact: selectedGuide?.contact || selectedGuide?.phone,
-                porterName: selectedPorter?.name,
-                porterContact: selectedPorter?.contact || selectedPorter?.phone,
-                bookingId: actualBookingId // Use actual booking ID
-              };
-
-              navigate('/booking-success', { state: { bookingDetails } });
-            });
-          },
-
-          onPending: function(result) {
-            console.log('⏳ Payment Pending:', result);
-            fetch(`${API_BASE_URL}/api/payment/update-status`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
+            onPending: function(result) {
+              console.log('⏳ Payment Pending:', result);
+              api.post('/api/payment/update-status', {
                 booking_id: actualBookingId, // Use actual booking ID
                 status: 'pending',
                 payment_data: result
               })
-            })
-            .then(response => response.json())
-            .then(updateResult => {
-              console.log('Payment pending, status updated:', updateResult);
-            })
-            .catch(err => console.error('Error updating pending status:', err))
-            .finally(() => {
-              // Prepare booking details for pending page
-              const bookingDetails = {
-                tripName: bookingSummary.service,
-                date: bookingSummary.dates,
-                participants: bookingSummary.participants,
-                totalPrice: totalPrice,
-                referenceNumber: actualBookingId, // Use actual booking ID
-                guideName: selectedGuide?.name,
-                guideContact: selectedGuide?.contact || selectedGuide?.phone,
-                porterName: selectedPorter?.name,
-                porterContact: selectedPorter?.contact || selectedPorter?.phone,
-                bookingId: actualBookingId // Use actual booking ID
-              };
+              .then(updateResult => {
+                console.log('Payment pending, status updated:', updateResult.data);
+              })
+              .catch(err => console.error('Error updating pending status:', err))
+              .finally(() => {
+                // Prepare booking details for pending page
+                const bookingDetails = {
+                  tripName: bookingSummary.service,
+                  date: bookingSummary.dates,
+                  participants: bookingSummary.participants,
+                  totalPrice: totalPrice,
+                  referenceNumber: actualBookingId, // Use actual booking ID
+                  guideName: selectedGuide?.name,
+                  guideContact: selectedGuide?.contact || selectedGuide?.phone,
+                  porterName: selectedPorter?.name,
+                  porterContact: selectedPorter?.contact || selectedPorter?.phone,
+                  bookingId: actualBookingId // Use actual booking ID
+                };
 
-              navigate('/booking-pending', { state: { bookingDetails } });
-            });
-          },
+                navigate('/booking-pending', { state: { bookingDetails } });
+              });
+            },
 
-          onError: function(result) {
-            console.log('❌ Payment Error:', result);
-            // Update status to 'failed'
-            fetch(`${API_BASE_URL}/api/payment/update-status`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
+            onError: function(result) {
+              console.log('❌ Payment Error:', result);
+              // Update status to 'failed'
+              api.post('/api/payment/update-status', {
                 booking_id: actualBookingId, // Use actual booking ID
                 status: 'failed',
                 payment_data: result
               })
-            })
-            .then(response => response.json())
-            .then(updateResult => {
-              console.log('Payment failed, status updated:', updateResult);
-            })
-            .catch(err => console.error('Error updating failed status:', err));
+              .then(updateResult => {
+                console.log('Payment failed, status updated:', updateResult.data);
+              })
+              .catch(err => console.error('Error updating failed status:', err));
 
-            toast({
-              title: "Pembayaran Gagal",
-              description: result.status_message || "Terjadi kesalahan dalam pembayaran. Silakan coba lagi.",
-              variant: "destructive",
-            });
-          },
+              toast({
+                title: "Pembayaran Gagal",
+                description: result.status_message || "Terjadi kesalahan dalam pembayaran. Silakan coba lagi.",
+                variant: "destructive",
+              });
+            },
 
-          onClose: function() {
-            console.log(' doorway Popup Closed by User');
-            toast({
-              title: "Pembayaran Dibatalkan",
-              description: "Pembayaran dibatalkan oleh pengguna.",
-              variant: "destructive",
-            });
-          }
-        });
+            onClose: function() {
+              console.log(' doorway Popup Closed by User');
+              toast({
+                title: "Pembayaran Dibatalkan",
+                description: "Pembayaran dibatalkan oleh pengguna.",
+                variant: "destructive",
+              });
+            }
+          });
+        } else {
+          console.error('Midtrans Snap is not loaded');
+          toast({
+            title: "Gagal Memuat Pembayaran",
+            description: "Layanan pembayaran gagal dimuat. Silakan refresh halaman dan coba lagi.",
+            variant: "destructive",
+          });
+        }
       } else {
-        console.error('Midtrans Snap is not loaded');
+        console.error('Midtrans token not found or invalid.');
         toast({
-          title: "Gagal Memuat Pembayaran",
-          description: "Layanan pembayaran gagal dimuat. Silakan refresh halaman dan coba lagi.",
+          title: "Token Pembayaran Tidak Valid",
+          description: data.message || "Tidak dapat memulai pembayaran. Silakan coba lagi.",
           variant: "destructive",
         });
       }
-    } else {
-      console.error('Midtrans token not found or invalid.');
+
+    } catch (error) {
+      console.error('Payment error:', error);
       toast({
-        title: "Token Pembayaran Tidak Valid",
-        description: data.message || "Tidak dapat memulai pembayaran. Silakan coba lagi.",
+        title: "Terjadi Kesalahan",
+        description: error instanceof Error ? error.message : "Gagal memproses pembayaran. Silakan coba lagi.",
         variant: "destructive",
       });
+    } finally {
+      setIsProcessing(false);
     }
-
-  } catch (error) {
-    console.error('Payment error:', error);
-    toast({
-      title: "Terjadi Kesalahan",
-      description: error instanceof Error ? error.message : "Gagal memproses pembayaran. Silakan coba lagi.",
-      variant: "destructive",
-    });
-  } finally {
-    setIsProcessing(false);
-  }
-};
+  };
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
