@@ -11,12 +11,12 @@ const BookingSuccessFixed = () => {
   const [error, setError] = useState<string | null>(null);
   const location = useLocation();
   const navigate = useNavigate();
-  
+
   // Extract booking code from URL or state
-  const bookingCode = location.state?.bookingCode || 
+  const bookingCode = location.state?.bookingCode ||
                      new URLSearchParams(location.search).get('booking_code') ||
                      new URLSearchParams(location.search).get('bookingCode');
-  
+
   useEffect(() => {
     if (bookingCode) {
       fetchBookingDetails();
@@ -26,15 +26,19 @@ const BookingSuccessFixed = () => {
   const fetchBookingDetails = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`http://localhost:5000/api/bookings`);
-      
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/bookings`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        }
+      });
+
       if (response.ok) {
         const result = await response.json();
-        
+
         if (result.success) {
           // Find booking with matching code
           const matchedBooking = result.data.find((b: any) => b.booking_code === bookingCode);
-          
+
           if (matchedBooking) {
             setBooking(matchedBooking);
           } else {
@@ -121,7 +125,7 @@ const BookingSuccessFixed = () => {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Status Pembayaran</span>
-                  <Badge 
+                  <Badge
                     variant={booking.payment_status === 'paid' ? 'default' : 'secondary'}
                     className={booking.payment_status === 'paid' ? 'bg-green-500' : 'bg-yellow-500'}
                   >
@@ -223,7 +227,7 @@ const BookingSuccessFixed = () => {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Status</span>
-                  <Badge 
+                  <Badge
                     variant={booking.payment_status === 'paid' ? 'default' : 'secondary'}
                     className={booking.payment_status === 'paid' ? 'bg-green-500' : 'bg-yellow-500'}
                   >

@@ -101,7 +101,7 @@ interface UpdateOpenTripRequest {
   image_url?: string;
 }
 
-const API_BASE = "http://localhost:5000/api";
+const API_BASE = import.meta.env.VITE_API_URL;
 
 export default function AdminOpenTrips() {
   const [openTrips, setOpenTrips] = useState<OpenTrip[]>([]);
@@ -153,8 +153,8 @@ export default function AdminOpenTrips() {
     // Filter by search term
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
-      result = result.filter(trip => 
-        trip.title.toLowerCase().includes(term) || 
+      result = result.filter(trip =>
+        trip.title.toLowerCase().includes(term) ||
         trip.mountain_name.toLowerCase().includes(term) ||
         trip.description.toLowerCase().includes(term)
       );
@@ -235,7 +235,7 @@ export default function AdminOpenTrips() {
     try {
       // Add debug log for form data
       console.log("Create form data before submitting:", createForm);
-      
+
       // Create form data for file upload
       const formData = new FormData();
       formData.append('title', createForm.title);
@@ -273,7 +273,7 @@ export default function AdminOpenTrips() {
       formData.append('description', createForm.description);
       formData.append('includes', JSON.stringify(createForm.includes));
       formData.append('highlights', JSON.stringify(createForm.highlights));
-      
+
       // If there's an image file, add it to the form data
       if (imageFile) {
         formData.append('image_url', imageFile);
@@ -288,7 +288,7 @@ export default function AdminOpenTrips() {
       });
 
       const result = await response.json();
-      
+
       if (result.success) {
         setShowCreateModal(false);
         setCreateForm({
@@ -388,7 +388,7 @@ export default function AdminOpenTrips() {
       if (editForm.description) formData.append('description', editForm.description);
       if (editForm.includes) formData.append('includes', JSON.stringify(editForm.includes));
       if (editForm.highlights) formData.append('highlights', JSON.stringify(editForm.highlights));
-      
+
       // If there's an image file, add it to the form data
       if (editImageFile) {
         formData.append('image_url', editImageFile);
@@ -403,7 +403,7 @@ export default function AdminOpenTrips() {
       });
 
       const result = await response.json();
-      
+
       if (result.success) {
         setShowEditModal(false);
         setEditingTrip(null);
@@ -439,7 +439,7 @@ export default function AdminOpenTrips() {
       });
 
       const result = await response.json();
-      
+
       if (result.success) {
         fetchOpenTrips(); // Refresh the open trips list
         toast({
@@ -575,7 +575,7 @@ export default function AdminOpenTrips() {
       });
 
       const result = await response.json();
-      
+
       if (result.success) {
         fetchOpenTrips(); // Refresh the open trips list
         toast({
@@ -607,7 +607,7 @@ export default function AdminOpenTrips() {
       });
 
       const result = await response.json();
-      
+
       if (result.success) {
         fetchOpenTrips(); // Refresh the open trips list
         toast({
@@ -677,7 +677,7 @@ export default function AdminOpenTrips() {
                       required
                     />
                   </div>
-                  
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="mountain_id">Mountain</Label>
@@ -700,7 +700,7 @@ export default function AdminOpenTrips() {
                         ))}
                       </select>
                     </div>
-                    
+
                     <div>
                       <Label htmlFor="difficulty">Difficulty</Label>
                       <select
@@ -721,7 +721,7 @@ export default function AdminOpenTrips() {
                       </select>
                     </div>
                   </div>
-                  
+
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
                       <Label htmlFor="duration_days">Duration (Days)</Label>
@@ -739,7 +739,7 @@ export default function AdminOpenTrips() {
                         required
                       />
                     </div>
-                    
+
                     <div>
                       <Label htmlFor="duration_nights">Duration (Nights)</Label>
                       <Input
@@ -756,7 +756,7 @@ export default function AdminOpenTrips() {
                         required
                       />
                     </div>
-                    
+
                     <div>
                       <Label htmlFor="min_participants">Min Participants</Label>
                       <Input
@@ -774,7 +774,7 @@ export default function AdminOpenTrips() {
                       />
                     </div>
                   </div>
-                  
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="base_price">Base Price (IDR)</Label>
@@ -792,7 +792,7 @@ export default function AdminOpenTrips() {
                         required
                       />
                     </div>
-                    
+
                     <div>
                       <Label htmlFor="original_price">Original Price (IDR)</Label>
                       <Input
@@ -809,7 +809,7 @@ export default function AdminOpenTrips() {
                       />
                     </div>
                   </div>
-                  
+
                   <div>
                     <Label htmlFor="max_participants">Max Participants</Label>
                     <Input
@@ -826,7 +826,7 @@ export default function AdminOpenTrips() {
                       required
                     />
                   </div>
-                  
+
                   <div>
                     <Label htmlFor="description">Description</Label>
                     <textarea
@@ -842,7 +842,7 @@ export default function AdminOpenTrips() {
                       required
                     />
                   </div>
-                  
+
                   <div>
                     <Label htmlFor="image-upload">Upload Image</Label>
                     <div className="flex items-center gap-2">
@@ -863,7 +863,7 @@ export default function AdminOpenTrips() {
                       </p>
                     )}
                   </div>
-                  
+
                   <div>
                     <Label>Includes</Label>
                     <div className="flex gap-2 mt-1">
@@ -881,8 +881,8 @@ export default function AdminOpenTrips() {
                       {createForm.includes.map((include, index) => (
                         <Badge key={index} variant="secondary" className="flex items-center gap-1">
                           {include}
-                          <button 
-                            type="button" 
+                          <button
+                            type="button"
                             onClick={() => handleRemoveInclude(index)}
                             className="ml-1 text-destructive hover:text-destructive/80"
                           >
@@ -892,7 +892,7 @@ export default function AdminOpenTrips() {
                       ))}
                     </div>
                   </div>
-                  
+
                   <div>
                     <Label>Highlights</Label>
                     <div className="flex gap-2 mt-1">
@@ -910,8 +910,8 @@ export default function AdminOpenTrips() {
                       {createForm.highlights.map((highlight, index) => (
                         <Badge key={index} variant="default" className="flex items-center gap-1">
                           {highlight}
-                          <button 
-                            type="button" 
+                          <button
+                            type="button"
                             onClick={() => handleRemoveHighlight(index)}
                             className="ml-1 text-destructive hover:text-destructive/80"
                           >
@@ -921,7 +921,7 @@ export default function AdminOpenTrips() {
                       ))}
                     </div>
                   </div>
-                  
+
                   <div>
                     <Label>Guide Selection</Label>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
@@ -939,7 +939,7 @@ export default function AdminOpenTrips() {
                       ))}
                     </div>
                   </div>
-                  
+
                   <div>
                     <Label>Porter Selection</Label>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
@@ -1008,9 +1008,9 @@ export default function AdminOpenTrips() {
                       </TableCell>
                       <TableCell>
                         <Badge variant={
-                          trip.difficulty === "Easy" ? "default" : 
-                          trip.difficulty === "Medium" ? "secondary" : 
-                          trip.difficulty === "Hard" ? "destructive" : 
+                          trip.difficulty === "Easy" ? "default" :
+                          trip.difficulty === "Medium" ? "secondary" :
+                          trip.difficulty === "Hard" ? "destructive" :
                           "outline"
                         }>
                           {trip.difficulty}
@@ -1122,7 +1122,7 @@ export default function AdminOpenTrips() {
                   required
                 />
               </div>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="edit-mountain_id">Mountain</Label>
@@ -1145,7 +1145,7 @@ export default function AdminOpenTrips() {
                     ))}
                   </select>
                 </div>
-                
+
                 <div>
                   <Label htmlFor="edit-difficulty">Difficulty</Label>
                   <select
@@ -1166,7 +1166,7 @@ export default function AdminOpenTrips() {
                   </select>
                 </div>
               </div>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <Label htmlFor="edit-duration_days">Duration (Days)</Label>
@@ -1184,7 +1184,7 @@ export default function AdminOpenTrips() {
                     required
                   />
                 </div>
-                
+
                 <div>
                   <Label htmlFor="edit-duration_nights">Duration (Nights)</Label>
                   <Input
@@ -1201,7 +1201,7 @@ export default function AdminOpenTrips() {
                     required
                   />
                 </div>
-                
+
                 <div>
                   <Label htmlFor="edit-min_participants">Min Participants</Label>
                   <Input
@@ -1219,7 +1219,7 @@ export default function AdminOpenTrips() {
                   />
                 </div>
               </div>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="edit-base_price">Base Price (IDR)</Label>
@@ -1237,7 +1237,7 @@ export default function AdminOpenTrips() {
                     required
                   />
                 </div>
-                
+
                 <div>
                   <Label htmlFor="edit-original_price">Original Price (IDR)</Label>
                   <Input
@@ -1254,7 +1254,7 @@ export default function AdminOpenTrips() {
                   />
                 </div>
               </div>
-              
+
               <div>
                 <Label htmlFor="edit-max_participants">Max Participants</Label>
                 <Input
@@ -1271,7 +1271,7 @@ export default function AdminOpenTrips() {
                   required
                 />
               </div>
-              
+
               <div>
                 <Label htmlFor="edit-description">Description</Label>
                 <textarea
@@ -1287,7 +1287,7 @@ export default function AdminOpenTrips() {
                   required
                 />
               </div>
-              
+
               <div>
                 <Label htmlFor="edit-image-upload">Update Image</Label>
                 <div className="flex items-center gap-2">
@@ -1316,7 +1316,7 @@ export default function AdminOpenTrips() {
                   </p>
                 )}
               </div>
-              
+
               <div>
                 <Label>Includes</Label>
                 <div className="flex gap-2 mt-1">
@@ -1334,8 +1334,8 @@ export default function AdminOpenTrips() {
                   {(editForm.includes || editingTrip.includes || []).map((include, index) => (
                     <Badge key={index} variant="secondary" className="flex items-center gap-1">
                       {include}
-                      <button 
-                        type="button" 
+                      <button
+                        type="button"
                         onClick={() => handleRemoveEditInclude(index)}
                         className="ml-1 text-destructive hover:text-destructive/80"
                       >
@@ -1345,7 +1345,7 @@ export default function AdminOpenTrips() {
                   ))}
                 </div>
               </div>
-              
+
               <div>
                 <Label>Highlights</Label>
                 <div className="flex gap-2 mt-1">
@@ -1363,8 +1363,8 @@ export default function AdminOpenTrips() {
                   {(editForm.highlights || editingTrip.highlights || []).map((highlight, index) => (
                     <Badge key={index} variant="default" className="flex items-center gap-1">
                       {highlight}
-                      <button 
-                        type="button" 
+                      <button
+                        type="button"
                         onClick={() => handleRemoveEditHighlight(index)}
                         className="ml-1 text-destructive hover:text-destructive/80"
                       >

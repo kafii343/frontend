@@ -34,7 +34,7 @@ interface Booking {
   created_at: string;
 }
 
-const API_BASE = "http://localhost:5000/api";
+const API_BASE = import.meta.env.VITE_API_URL;
 
 interface TripBookingsProps {
   tripId: number;
@@ -50,7 +50,7 @@ const TripBookings: React.FC<TripBookingsProps> = ({ tripId, tripTitle, children
 
   const fetchBookings = async () => {
     if (!open) return;
-    
+
     try {
       setLoading(true);
       const response = await fetch(`${API_BASE}/admin/open-trips/${tripId}/bookings`, {
@@ -121,7 +121,7 @@ const TripBookings: React.FC<TripBookingsProps> = ({ tripId, tripTitle, children
               Showing {bookings.length} booking{bookings.length !== 1 ? 's' : ''}
             </div>
           </div>
-          
+
           {loading ? (
             <div className="text-center py-8">Loading bookings...</div>
           ) : bookings.length === 0 ? (
@@ -162,8 +162,8 @@ const TripBookings: React.FC<TripBookingsProps> = ({ tripId, tripTitle, children
                       </TableCell>
                       <TableCell>
                         <Badge variant={
-                          booking.payment_status === "paid" ? "default" : 
-                          booking.payment_status === "pending" ? "secondary" : 
+                          booking.payment_status === "paid" ? "default" :
+                          booking.payment_status === "pending" ? "secondary" :
                           "destructive"
                         }>
                           {booking.payment_status.charAt(0).toUpperCase() + booking.payment_status.slice(1)}
@@ -171,9 +171,9 @@ const TripBookings: React.FC<TripBookingsProps> = ({ tripId, tripTitle, children
                       </TableCell>
                       <TableCell>
                         <Badge variant={
-                          booking.booking_status === "confirmed" ? "default" : 
-                          booking.booking_status === "pending" ? "secondary" : 
-                          booking.booking_status === "cancelled" ? "destructive" : 
+                          booking.booking_status === "confirmed" ? "default" :
+                          booking.booking_status === "pending" ? "secondary" :
+                          booking.booking_status === "cancelled" ? "destructive" :
                           "outline"
                         }>
                           {booking.booking_status.charAt(0).toUpperCase() + booking.booking_status.slice(1)}

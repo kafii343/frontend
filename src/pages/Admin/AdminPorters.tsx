@@ -86,19 +86,19 @@ const AdminPorters = () => {
     try {
       setLoading(true);
       setError(null);
-      
-      const response = await fetch('http://localhost:5000/api/porters', {
+
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/porters`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
         }
       });
-      
+
       if (!response.ok) {
         throw new Error('Failed to fetch porters');
       }
-      
+
       const data = await response.json();
-      
+
       if (data.success) {
         setPorters(data.data);
       } else {
@@ -119,7 +119,7 @@ const AdminPorters = () => {
 
   const handleAddPorter = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     try {
       const formData = new FormData();
       formData.append('name', addForm.name);
@@ -128,12 +128,12 @@ const AdminPorters = () => {
       formData.append('specialties', addForm.specialties);
       formData.append('price_per_day', addForm.price_per_day.toString());
       formData.append('description', addForm.description);
-      
+
       if (addForm.photo) {
         formData.append('photo', addForm.photo);
       }
 
-      const response = await fetch('http://localhost:5000/api/porters', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/porters`, {
         method: 'POST',
         headers: {
           // Don't include Content-Type header when using FormData
@@ -141,9 +141,9 @@ const AdminPorters = () => {
         },
         body: formData,
       });
-      
+
       const result = await response.json();
-      
+
       if (result.success) {
         setShowAddModal(false);
         setAddForm({
@@ -187,9 +187,9 @@ const AdminPorters = () => {
 
   const handleSaveEdit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!editingPorter) return;
-    
+
     try {
       const formData = new FormData();
       if (editForm.name) formData.append('name', editForm.name);
@@ -198,12 +198,12 @@ const AdminPorters = () => {
       if (editForm.specialties) formData.append('specialties', editForm.specialties);
       if (editForm.price_per_day !== undefined) formData.append('price_per_day', editForm.price_per_day.toString());
       if (editForm.description) formData.append('description', editForm.description);
-      
+
       if (editForm.photo) {
         formData.append('photo', editForm.photo);
       }
 
-      const response = await fetch(`http://localhost:5000/api/porters/${editingPorter.id}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/porters/${editingPorter.id}`, {
         method: 'PUT',
         headers: {
           // Don't include Content-Type header when using FormData
@@ -211,9 +211,9 @@ const AdminPorters = () => {
         },
         body: formData,
       });
-      
+
       const result = await response.json();
-      
+
       if (result.success) {
         setShowEditModal(false);
         setEditingPorter(null);
@@ -238,17 +238,17 @@ const AdminPorters = () => {
 
   const handleDeletePorter = async (id: number) => {
     if (!window.confirm("Yakin ingin menghapus porter ini? Data yang dihapus tidak bisa dikembalikan.")) return;
-    
+
     try {
-      const response = await fetch(`http://localhost:5000/api/porters/${id}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/porters/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
         },
       });
-      
+
       const result = await response.json();
-      
+
       if (result.success) {
         fetchPorters(); // Refresh the porters list
         toast({
@@ -385,7 +385,7 @@ const AdminPorters = () => {
           </DialogContent>
         </Dialog>
       </div>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {porters.length > 0 ? (
           porters.map((porter) => (
@@ -407,9 +407,9 @@ const AdminPorters = () => {
                       <Button variant="outline" size="sm" onClick={() => handleEditPorter(porter)}>
                         <Edit2 className="h-4 w-4" />
                       </Button>
-                      <Button 
-                        variant="destructive" 
-                        size="sm" 
+                      <Button
+                        variant="destructive"
+                        size="sm"
                         onClick={() => handleDeletePorter(porter.id)}
                       >
                         <Trash2 className="h-4 w-4" />

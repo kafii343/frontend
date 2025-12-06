@@ -90,19 +90,19 @@ const AdminGuides = () => {
     try {
       setLoading(true);
       setError(null);
-      
-      const response = await fetch('http://localhost:5000/api/guides', {
+
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/guides`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
         }
       });
-      
+
       if (!response.ok) {
         throw new Error('Failed to fetch guides');
       }
-      
+
       const data = await response.json();
-      
+
       if (data.success) {
         setGuides(data.data);
       } else {
@@ -123,7 +123,7 @@ const AdminGuides = () => {
 
   const handleAddGuide = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     try {
       const formData = new FormData();
       formData.append('name', addForm.name);
@@ -133,12 +133,12 @@ const AdminGuides = () => {
       formData.append('specialties', addForm.specialties);
       formData.append('price_per_day', addForm.price_per_day.toString());
       formData.append('description', addForm.description);
-      
+
       if (addForm.photo) {
         formData.append('photo', addForm.photo);
       }
 
-      const response = await fetch('http://localhost:5000/api/guides', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/guides`, {
         method: 'POST',
         headers: {
           // Don't include Content-Type header when using FormData
@@ -146,9 +146,9 @@ const AdminGuides = () => {
         },
         body: formData,
       });
-      
+
       const result = await response.json();
-      
+
       if (result.success) {
         setShowAddModal(false);
         setAddForm({
@@ -194,9 +194,9 @@ const AdminGuides = () => {
 
   const handleSaveEdit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!editingGuide) return;
-    
+
     try {
       const formData = new FormData();
       if (editForm.name) formData.append('name', editForm.name);
@@ -206,12 +206,12 @@ const AdminGuides = () => {
       if (editForm.specialties) formData.append('specialties', editForm.specialties);
       if (editForm.price_per_day !== undefined) formData.append('price_per_day', editForm.price_per_day.toString());
       if (editForm.description) formData.append('description', editForm.description);
-      
+
       if (editForm.photo) {
         formData.append('photo', editForm.photo);
       }
 
-      const response = await fetch(`http://localhost:5000/api/guides/${editingGuide.id}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/guides/${editingGuide.id}`, {
         method: 'PUT',
         headers: {
           // Don't include Content-Type header when using FormData
@@ -219,9 +219,9 @@ const AdminGuides = () => {
         },
         body: formData,
       });
-      
+
       const result = await response.json();
-      
+
       if (result.success) {
         setShowEditModal(false);
         setEditingGuide(null);
@@ -246,17 +246,17 @@ const AdminGuides = () => {
 
   const handleDeleteGuide = async (id: number) => {
     if (!window.confirm("Yakin ingin menghapus guide ini? Data yang dihapus tidak bisa dikembalikan.")) return;
-    
+
     try {
-      const response = await fetch(`http://localhost:5000/api/guides/${id}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/guides/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
         },
       });
-      
+
       const result = await response.json();
-      
+
       if (result.success) {
         fetchGuides(); // Refresh the guides list
         toast({
@@ -399,7 +399,7 @@ const AdminGuides = () => {
           </DialogContent>
         </Dialog>
       </div>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {guides.length > 0 ? (
           guides.map((guide) => (
@@ -421,9 +421,9 @@ const AdminGuides = () => {
                       <Button variant="outline" size="sm" onClick={() => handleEditGuide(guide)}>
                         <Edit2 className="h-4 w-4" />
                       </Button>
-                      <Button 
-                        variant="destructive" 
-                        size="sm" 
+                      <Button
+                        variant="destructive"
+                        size="sm"
                         onClick={() => handleDeleteGuide(guide.id)}
                       >
                         <Trash2 className="h-4 w-4" />

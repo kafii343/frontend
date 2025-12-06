@@ -73,7 +73,7 @@ interface UpdateUserRequest {
   full_name?: string;
 }
 
-const API_BASE = "http://localhost:5000/api";
+const API_BASE = import.meta.env.VITE_API_URL;
 
 export default function UserManagement() {
   const [users, setUsers] = useState<User[]>([]);
@@ -111,7 +111,7 @@ export default function UserManagement() {
     try {
       setLoading(true);
       const response = await fetch(
-        `${API_BASE}/admin/users?page=${currentPage}&limit=10&search=${searchTerm}`, 
+        `${API_BASE}/admin/users?page=${currentPage}&limit=10&search=${searchTerm}`,
         {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -149,7 +149,7 @@ export default function UserManagement() {
   // Handle add user
   const handleAddUser = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     try {
       const response = await fetch(`${API_BASE}/admin/users`, {
         method: "POST",
@@ -159,9 +159,9 @@ export default function UserManagement() {
         },
         body: JSON.stringify(addUserForm),
       });
-      
+
       const result = await response.json();
-      
+
       if (result.success) {
         setShowAddUserModal(false);
         setAddUserForm({ email: "", username: "", password: "", role: "user" });
@@ -178,7 +178,7 @@ export default function UserManagement() {
   // Handle add admin
   const handleAddAdmin = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     try {
       const response = await fetch(`${API_BASE}/admin/create-admin`, {
         method: "POST",
@@ -188,9 +188,9 @@ export default function UserManagement() {
         },
         body: JSON.stringify(addAdminForm),
       });
-      
+
       const result = await response.json();
-      
+
       if (result.success) {
         setShowAddAdminModal(false);
         setAddAdminForm({ email: "", username: "", password: "", admin_code: "" });
@@ -217,9 +217,9 @@ export default function UserManagement() {
   // Handle save edit
   const handleSaveEdit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!editingUser) return;
-    
+
     try {
       const response = await fetch(`${API_BASE}/admin/users/${editingUser.id}`, {
         method: "PUT",
@@ -229,9 +229,9 @@ export default function UserManagement() {
         },
         body: JSON.stringify(editForm),
       });
-      
+
       const result = await response.json();
-      
+
       if (result.success) {
         setShowEditModal(false);
         setEditingUser(null);
@@ -248,7 +248,7 @@ export default function UserManagement() {
   // Handle delete user
   const handleDeleteUser = async (userId: string) => {
     if (!window.confirm("Are you sure you want to delete this user?")) return;
-    
+
     try {
       const response = await fetch(`${API_BASE}/admin/users/${userId}`, {
         method: "DELETE",
@@ -256,9 +256,9 @@ export default function UserManagement() {
           "Authorization": `Bearer ${localStorage.getItem('token')}`,
         },
       });
-      
+
       const result = await response.json();
-      
+
       if (result.success) {
         fetchUsers(); // Refresh the users list
       } else {

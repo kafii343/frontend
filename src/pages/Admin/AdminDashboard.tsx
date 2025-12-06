@@ -55,32 +55,32 @@ const AdminDashboard = () => {
       setError(null);
 
       // Fetch stats data
-      const statsResponse = await fetch('http://localhost:5000/api/dashboard/stats', {
+      const statsResponse = await fetch(`${import.meta.env.VITE_API_URL}/api/dashboard/stats`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
         }
       });
-      
+
       if (!statsResponse.ok) {
         throw new Error('Failed to fetch stats data');
       }
-      
+
       const statsData = await statsResponse.json();
       if (statsData.success) {
         setStats(statsData.data);
       }
 
       // Fetch recent bookings
-      const bookingsResponse = await fetch('http://localhost:5000/api/bookings', {
+      const bookingsResponse = await fetch(`${import.meta.env.VITE_API_URL}/api/bookings`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
         }
       });
-      
+
       if (!bookingsResponse.ok) {
         throw new Error('Failed to fetch bookings data');
       }
-      
+
       const bookingsData = await bookingsResponse.json();
       if (bookingsData.success) {
         // Get only the 3 most recent bookings
@@ -89,16 +89,16 @@ const AdminDashboard = () => {
       }
 
       // Fetch recent users
-      const usersResponse = await fetch('http://localhost:5000/api/admin/users', {
+      const usersResponse = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/users`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
         }
       });
-      
+
       if (!usersResponse.ok) {
         throw new Error('Failed to fetch users data');
       }
-      
+
       const usersData = await usersResponse.json();
       if (usersData.success) {
         // Get only the 3 most recent users
@@ -132,7 +132,7 @@ const AdminDashboard = () => {
           <Card className="shadow-lg border-0 bg-red-50">
             <CardContent className="p-8 text-center">
               <p className="text-red-600 text-lg">{error}</p>
-              <button 
+              <button
                 onClick={() => window.location.reload()}
                 className="mt-4 px-4 py-2 bg-primary text-white rounded-lg hover:bg-forest-light transition-colors"
               >
@@ -150,7 +150,7 @@ const AdminDashboard = () => {
       <div className="max-w-7xl mx-auto">
         <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-2">Admin Dashboard</h1>
         <p className="text-muted-foreground">Kelola dan pantau aktivitas platform Carten'z</p>
-        
+
         {/* Stats Cards */}
         {stats && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
@@ -171,7 +171,7 @@ const AdminDashboard = () => {
                 </div>
               </CardContent>
             </Card>
-            
+
             <Card className="group hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border-0 shadow-lg bg-gradient-to-br from-white to-gray-50">
               <CardHeader className="flex flex-row items-center justify-between pb-4">
                 <div>
@@ -189,7 +189,7 @@ const AdminDashboard = () => {
                 </div>
               </CardContent>
             </Card>
-            
+
             <Card className="group hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border-0 shadow-lg bg-gradient-to-br from-white to-gray-50">
               <CardHeader className="flex flex-row items-center justify-between pb-4">
                 <div>
@@ -207,7 +207,7 @@ const AdminDashboard = () => {
                 </div>
               </CardContent>
             </Card>
-            
+
             <Card className="group hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border-0 shadow-lg bg-gradient-to-br from-white to-gray-50">
               <CardHeader className="flex flex-row items-center justify-between pb-4">
                 <div>
@@ -225,7 +225,7 @@ const AdminDashboard = () => {
                 </div>
               </CardContent>
             </Card>
-            
+
             <Card className="group hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border-0 shadow-lg bg-gradient-to-br from-white to-gray-50">
               <CardHeader className="flex flex-row items-center justify-between pb-4">
                 <div>
@@ -242,7 +242,7 @@ const AdminDashboard = () => {
                 </div>
               </CardContent>
             </Card>
-            
+
             <Card className="group hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border-0 shadow-lg bg-gradient-to-br from-white to-gray-50">
               <CardHeader className="flex flex-row items-center justify-between pb-4">
                 <div>
@@ -282,12 +282,12 @@ const AdminDashboard = () => {
                         <p className="font-medium text-gray-800">{booking.customer_name}</p>
                         <p className="text-sm text-gray-600 mt-1">{booking.trip_title}</p>
                       </div>
-                      <Badge variant={booking.status === 'paid' ? 'default' : 
-                                    booking.status === 'confirmed' ? 'secondary' : 
+                      <Badge variant={booking.status === 'paid' ? 'default' :
+                                    booking.status === 'confirmed' ? 'secondary' :
                                     booking.status === 'pending' ? 'outline' : 'destructive'}
                             className={`text-xs px-3 py-1 font-medium ${
-                              booking.status === 'paid' ? 'bg-green-100 text-green-800' : 
-                              booking.status === 'confirmed' ? 'bg-blue-100 text-blue-800' : 
+                              booking.status === 'paid' ? 'bg-green-100 text-green-800' :
+                              booking.status === 'confirmed' ? 'bg-blue-100 text-blue-800' :
                               booking.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'
                             }`}>
                         {booking.status}
